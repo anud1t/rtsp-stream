@@ -17,7 +17,7 @@ Release/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
-Makefile
+# Note: Makefile is intentionally included in the repository
 
 # IDE and editor files
 .vscode/
