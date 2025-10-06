@@ -2,8 +2,50 @@
 
 #include <gst/gst.h>
 #include <gst/rtsp-server/rtsp-server.h>
+#include <gst/rtsp/rtsp.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
+#include <stdio.h>
+
+// Global variables for connection tracking
+static gint connection_count = 0;
+
+// Function to get current timestamp
+static gchar* get_timestamp() {
+    time_t now = time(0);
+    struct tm *tm_info = localtime(&now);
+    static gchar timestamp[64];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
+    return timestamp;
+}
+
+// Function to log new connections
+static void on_new_connection(GstRTSPServer *server, GstRTSPClient *client, gpointer user_data) {
+    GstRTSPConnection *conn = gst_rtsp_client_get_connection(client);
+    if (conn) {
+        const gchar *remote_ip = gst_rtsp_connection_get_ip(conn);
+        connection_count++;
+        
+        printf("\n[%s] NEW CONNECTION #%d\n", get_timestamp(), connection_count);
+        printf("  Client IP: %s\n", remote_ip ? remote_ip : "unknown");
+        printf("  Connection established\n");
+        printf("----------------------------------------\n");
+    }
+}
+
+// Function to log stream access
+static void on_stream_access(GstRTSPClient *client, GstRTSPContext *ctx, gpointer user_data) {
+    GstRTSPConnection *conn = gst_rtsp_client_get_connection(client);
+    if (conn) {
+        const gchar *remote_ip = gst_rtsp_connection_get_ip(conn);
+        
+        printf("\n[%s] STREAM ACCESS\n", get_timestamp());
+        printf("  Client IP: %s\n", remote_ip ? remote_ip : "unknown");
+        printf("  Stream request received\n");
+        printf("----------------------------------------\n");
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -37,6 +79,10 @@ int main(int argc, char *argv[])
     server = gst_rtsp_server_new();
     g_object_set(server, "service", port, NULL);
 
+    // Connect signal handlers for connection monitoring
+    g_signal_connect(server, "client-connected", G_CALLBACK(on_new_connection), NULL);
+    g_signal_connect(server, "client-request", G_CALLBACK(on_stream_access), NULL);
+
     mounts = gst_rtsp_server_get_mount_points(server);
 
     for (i = start_arg; i < argc; i += 2) {
@@ -60,6 +106,7 @@ int main(int argc, char *argv[])
     }
 
     g_print("\nRTSP server is listening on rtsp://0.0.0.0:%s/\n", port);
+    g_print("Connection monitoring enabled - will show client connections and stream access\n");
     g_print("Press Ctrl+C to stop the server\n\n");
 
     g_main_loop_run(loop);

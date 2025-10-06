@@ -3,8 +3,8 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99
 PKG_CONFIG = pkg-config
-GSTREAMER_CFLAGS = $(shell $(PKG_CONFIG) --cflags gstreamer-rtsp-server-1.0)
-GSTREAMER_LIBS = $(shell $(PKG_CONFIG) --libs gstreamer-rtsp-server-1.0)
+GSTREAMER_CFLAGS = $(shell $(PKG_CONFIG) --cflags gstreamer-rtsp-server-1.0 gstreamer-rtsp-1.0)
+GSTREAMER_LIBS = $(shell $(PKG_CONFIG) --libs gstreamer-rtsp-server-1.0 gstreamer-rtsp-1.0)
 
 # Targets
 JETSON_DIR = jetson
