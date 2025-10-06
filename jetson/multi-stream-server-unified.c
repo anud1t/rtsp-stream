@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
         gst_rtsp_media_factory_set_shared(factory, TRUE);
         gst_rtsp_mount_points_add_factory(mounts, mount_point, factory);
 
-        g_print("Added stream %s\n", mount_point);
+        g_print("Added stream: %s\n", mount_point);
     }
 
     g_object_unref(mounts);
@@ -59,7 +59,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    g_print("RTSP server is listening on rtsp://0.0.0.0:%s/\n", port);
+    g_print("\nRTSP server is listening on rtsp://0.0.0.0:%s/\n", port);
+    g_print("Press Ctrl+C to stop the server\n\n");
 
     g_main_loop_run(loop);
 

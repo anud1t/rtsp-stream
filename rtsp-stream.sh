@@ -203,7 +203,9 @@ select_sturdecam_resolution() {
 }
 
 start_gstreamer_pipelines() {
+    echo ""
     print_info "Starting the GStreamer pipelines..."
+    echo ""
 
     # Arrays to store mount points and pipelines
     MOUNT_POINTS=()
@@ -214,7 +216,9 @@ start_gstreamer_pipelines() {
         for i in "${!SELECTED_CAMERAS[@]}"; do
             device="${SELECTED_CAMERAS[$i]}"
             DEVICE_TYPE="${SELECTED_DEVICE_TYPES[$i]}"
+            echo "----------------------------------------"
             print_info "Configuring stream for device: $device ($DEVICE_TYPE)"
+            echo ""
 
             # Set default stream name
             if [ "$DEVICE_TYPE" == "STURDECAM" ]; then
@@ -227,6 +231,7 @@ start_gstreamer_pipelines() {
             read -p "Enter the stream name for $device [$DEFAULT_STREAM_NAME]: " STREAM_NAME
             STREAM_NAME=${STREAM_NAME:-$DEFAULT_STREAM_NAME}
             STREAM_NAMES+=("$STREAM_NAME")
+            echo ""
 
             if [ "$DEVICE_TYPE" == "STURDECAM" ]; then
                 # Hardware acceleration pipeline for STURDECAM
@@ -284,50 +289,61 @@ start_gstreamer_pipelines() {
     done
 
     # Start the RTSP server(s) based on user choice
+    echo "========================================"
     case $STREAM_TO_LOCALHOST in
         "single")
             print_info "Starting RTSP server with multiple streams..."
+            echo ""
             "$SCRIPT_DIR/jetson/multi-stream-server-unified" "${SERVER_ARGS[@]}" &
             RTSP_SERVER_PID=$!
             add_background_process "$RTSP_SERVER_PID"
 
-            print_info "RTSP server started with PID $RTSP_SERVER_PID"
+            print_success "RTSP server started with PID $RTSP_SERVER_PID"
+            echo ""
+            echo "Stream URLs:"
             for mount_point in "${MOUNT_POINTS[@]}"; do
-                echo -e "${CYAN}Streaming to rtsp://$RTSP_IP:8554${mount_point}${RESET}"
-                echo -e "${CYAN}Streaming to rtsp://localhost:8554${mount_point}${RESET}"
+                echo -e "  ${CYAN}rtsp://$RTSP_IP:8554${mount_point}${RESET}"
+                echo -e "  ${CYAN}rtsp://localhost:8554${mount_point}${RESET}"
             done
+            echo ""
             ;;
         "separate")
             print_info "Starting external RTSP server on port 8554..."
+            echo ""
             "$SCRIPT_DIR/jetson/multi-stream-server-unified" "${SERVER_ARGS[@]}" &
             RTSP_SERVER_PID=$!
             add_background_process "$RTSP_SERVER_PID"
 
-            print_info "External RTSP server started with PID $RTSP_SERVER_PID"
-            for mount_point in "${MOUNT_POINTS[@]}"; do
-                echo -e "${CYAN}Streaming to rtsp://$RTSP_IP:8554${mount_point}${RESET}"
-            done
-
+            print_success "External RTSP server started with PID $RTSP_SERVER_PID"
+            echo ""
             print_info "Starting localhost RTSP server on port 8555..."
             "$SCRIPT_DIR/jetson/multi-stream-server-unified" --port 8555 "${SERVER_ARGS[@]}" &
             LOCALHOST_SERVER_PID=$!
             add_background_process "$LOCALHOST_SERVER_PID"
             
-            print_info "Localhost RTSP server started with PID $LOCALHOST_SERVER_PID"
+            print_success "Localhost RTSP server started with PID $LOCALHOST_SERVER_PID"
+            echo ""
+            echo "Stream URLs:"
             for mount_point in "${MOUNT_POINTS[@]}"; do
-                echo -e "${CYAN}Streaming to rtsp://localhost:8555${mount_point}${RESET}"
+                echo -e "  ${CYAN}External: rtsp://$RTSP_IP:8554${mount_point}${RESET}"
+                echo -e "  ${CYAN}Localhost: rtsp://localhost:8555${mount_point}${RESET}"
             done
+            echo ""
             ;;
         "external")
             print_info "Starting RTSP server with multiple streams..."
+            echo ""
             "$SCRIPT_DIR/jetson/multi-stream-server-unified" "${SERVER_ARGS[@]}" &
             RTSP_SERVER_PID=$!
             add_background_process "$RTSP_SERVER_PID"
 
-            print_info "RTSP server started with PID $RTSP_SERVER_PID"
+            print_success "RTSP server started with PID $RTSP_SERVER_PID"
+            echo ""
+            echo "Stream URLs:"
             for mount_point in "${MOUNT_POINTS[@]}"; do
-                echo -e "${CYAN}Streaming to rtsp://$RTSP_IP:8554${mount_point}${RESET}"
+                echo -e "  ${CYAN}rtsp://$RTSP_IP:8554${mount_point}${RESET}"
             done
+            echo ""
             ;;
     esac
 
