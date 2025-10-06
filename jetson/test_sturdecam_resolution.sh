@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Test script to demonstrate the new STURDECAM resolution feature
+
+echo "========================================="
+echo "      STURDECAM Resolution Test          "
+echo "========================================="
+
+echo "Testing the new STURDECAM resolution options in rtsp_stream.sh"
+echo ""
+echo "The script now offers STURDECAM resolution options:"
+echo "1. 1920x1536 (Native) - Default STURDECAM resolution"
+echo "2. 1920x1080 (1080p) - Standard 1080p resolution"
+echo "3. 1280x720 (720p) - Standard 720p resolution"
+echo "4. Custom - Enter your own width and height"
+echo ""
+echo "To test this feature:"
+echo "1. Run: ./rtsp_stream.sh"
+echo "2. Select option 1 (Cameras)"
+echo "3. Select a STURDECAM device"
+echo "4. Choose your desired resolution (1-4)"
+echo ""
+echo "Example GStreamer pipeline for 1080p:"
+echo "  gst-launch-1.0 v4l2src device=/dev/video0 ! video/x-raw,width=1920,height=1080 ! autovideosink"
+echo ""
+echo "The script will automatically:"
+echo "- Apply the selected resolution to the STURDECAM pipeline"
+echo "- Use hardware acceleration (nvvidconv, nvv4l2h264enc)"
+echo "- Stream via RTSP with the chosen resolution"
+echo ""
+echo "Benefits of different resolutions:"
+echo "- Native (1920x1536): Best quality, higher bandwidth"
+echo "- 1080p (1920x1080): Standard HD, good balance"
+echo "- 720p (1280x720): Lower bandwidth, faster streaming"
+echo "- Custom: Tailored to your specific needs"
+echo ""
+echo "Press Enter to continue..."
+read 
