@@ -21,7 +21,7 @@ static gchar* get_timestamp() {
 }
 
 // Function to log new connections
-static void on_new_connection(GstRTSPServer *server, GstRTSPClient *client, gpointer user_data) {
+static void on_new_connection(GstRTSPServer *server __attribute__((unused)), GstRTSPClient *client, gpointer user_data __attribute__((unused))) {
     GstRTSPConnection *conn = gst_rtsp_client_get_connection(client);
     if (conn) {
         const gchar *remote_ip = gst_rtsp_connection_get_ip(conn);
@@ -35,7 +35,7 @@ static void on_new_connection(GstRTSPServer *server, GstRTSPClient *client, gpoi
 }
 
 // Function to log stream access
-static void on_stream_access(GstRTSPClient *client, GstRTSPContext *ctx, gpointer user_data) {
+static void on_stream_access(GstRTSPClient *client, GstRTSPContext *ctx __attribute__((unused)), gpointer user_data __attribute__((unused))) {
     GstRTSPConnection *conn = gst_rtsp_client_get_connection(client);
     if (conn) {
         const gchar *remote_ip = gst_rtsp_connection_get_ip(conn);
