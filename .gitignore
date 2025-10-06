@@ -1,0 +1,125 @@
+# Compiled binaries
+*.o
+*.so
+*.a
+*.exe
+*.out
+*.app
+multi-stream-server
+multi-stream-server-port
+
+# Build directories
+build/
+bin/
+obj/
+Debug/
+Release/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.pid
+*.lock
+
+# GStreamer cache and temporary files
+.gstreamer-*
+*.gst
+
+# System files
+*.orig
+*.rej
+.directory
+
+# Package files
+*.deb
+*.rpm
+*.tar.gz
+*.zip
+
+# Core dumps
+core
+core.*
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Test outputs
+test_output/
+test_results/
+
+# Documentation build
+docs/_build/
+site/
+
+# Python (if any Python scripts are added)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Node.js (if any Node.js tools are added)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

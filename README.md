@@ -1,7 +1,6 @@
+# RTSP Stream System
 
-# RTSP Stream Script
-
-**RTSP Stream Script** is a Bash script designed to stream multiple cameras and video files over RTSP using GStreamer and `gst-rtsp-server`. It provides an interactive setup to configure various streaming parameters, ensuring a seamless streaming experience for multiple sources simultaneously.
+A comprehensive RTSP streaming solution for multiple cameras and video files using GStreamer and gst-rtsp-server. Supports both Jetson and ARM Linux platforms with hardware acceleration and flexible configuration options.
 
 ## Table of Contents
 
@@ -10,114 +9,259 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
-- [Streaming Protocol](#streaming-protocol)
+- [Advanced Features](#advanced-features)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
 
 ## Features
 
-- **Multiple Stream Support**: Stream up to 4 cameras and 4 video files concurrently.
-- **Encoder Selection**: Choose from available hardware-accelerated or software encoders.
-- **Resolution Configuration**: Select predefined resolutions or set custom dimensions.
-- **Tailscale Integration**: Optionally configure Tailscale for secure remote access.
-- **Automatic Dependency Management**: Checks and installs necessary dependencies.
-- **Graceful Cleanup**: Ensures all background processes are terminated upon exit.
+- **Multiple Stream Support**: Stream up to 4 cameras and 4 video files concurrently
+- **Hardware Acceleration**: NVIDIA Jetson hardware acceleration for STURDECAM devices
+- **Flexible Resolution Options**: Native, standard HD, or custom resolutions
+- **Dual Server Support**: Separate servers for external and localhost access
+- **Tailscale Integration**: Optional secure remote access via Tailscale
+- **Automatic Dependency Management**: Checks and installs necessary dependencies
+- **Graceful Cleanup**: Ensures all background processes are terminated on exit
+- **Unified Interface**: Single script handles all streaming scenarios
 
 ## Prerequisites
 
-Before using the script, ensure your system meets the following requirements:
-
-- **Operating System**: Debian-based Linux distributions (e.g., Ubuntu).
-- **User Permissions**: Sudo privileges for installing packages and configuring system settings.
-- **Hardware**: Up to 4 USB or built-in cameras supported by `v4l2`.
+- **Operating System**: Debian-based Linux distributions (Ubuntu, etc.)
+- **User Permissions**: Sudo privileges for installing packages
+- **Hardware**: Up to 4 USB or built-in cameras supported by `v4l2`
+- **For Jetson**: NVIDIA Jetson platform for hardware acceleration
 
 ## Installation
 
-1. **Clone the Repository**
+### 1. Clone the Repository
 
-   ```bash
-   git clone https://github.com/anudit/multi-rtsp-stream.git
-   cd rtsp-stream
-   ```
+```bash
+git clone https://github.com/yourusername/rtsp-stream.git
+cd rtsp-stream
+```
 
-2. **Ensure Script is Executable**
+### 2. Build the Project
 
-   ```bash
-   chmod +x multi_rtsp_stream.sh
-   ```
+```bash
+make all
+```
 
-3. **Prepare `multi-stream-server`**
+This will compile the unified RTSP server binary.
 
-   The script relies on `multi-stream-server`, which needs to be compiled from source.
+### 3. Install Dependencies (if needed)
 
-   ```bash
-   gcc -o multi-stream-server multi-stream-server.c $(pkg-config --cflags --libs gstreamer-rtsp-server-1.0)
-   ```
+The script will automatically check and offer to install missing dependencies:
 
-   > **Note**: The script can automatically handle this step if `multi-stream-server` is not found. However, having the C source file (`multi-stream-server.c`) in the same directory is essential.
+- GStreamer and plugins
+- v4l-utils for camera support
+- gst-rtsp-server development packages
 
 ## Usage
 
-Run the script using Bash:
+### Basic Usage
+
+Run the main streaming script:
 
 ```bash
-./multi_rtsp_stream.sh
+./rtsp-stream.sh
 ```
 
-The script will guide you through an interactive setup process:
+The script will guide you through an interactive setup:
 
-1. **Dependency Check**: Ensures all necessary packages are installed. Offers to install missing dependencies.
-2. **Encoder Selection**: Lists available GStreamer encoders and prompts you to choose one.
-3. **Resolution Selection**: Choose from predefined resolutions or set a custom resolution.
-4. **Streaming Source Selection**:
-   - **Cameras**: Select up to 4 connected video devices.
-   - **Video Files**: Provide paths to up to 4 video files for streaming.
-5. **Tailscale Configuration**: Optionally install and configure Tailscale for remote access.
-6. **RTSP Server Setup**: Configures and starts the RTSP server with the selected streams.
+1. **Dependency Check**: Ensures all necessary packages are installed
+2. **Source Selection**: Choose cameras, video files, or both
+3. **Device Selection**: Select up to 4 cameras or video files
+4. **Resolution Configuration**: Choose output resolution
+5. **Server Configuration**: Configure RTSP server options
+6. **Streaming**: Start the RTSP streams
+
+### Command Line Options
+
+The unified RTSP server supports flexible port configuration:
+
+```bash
+# Default port (8554)
+./jetson/multi-stream-server-unified /cam1 "( v4l2src device=/dev/video0 ! ... )"
+
+# Custom port
+./jetson/multi-stream-server-unified --port 8555 /cam1 "( v4l2src device=/dev/video0 ! ... )"
+```
 
 ## Configuration
 
-### Resolution Configuration
+### Resolution Options
 
-Select from common resolutions:
+#### Standard Resolutions
+- **1920x1080 (1080p)**: Full HD quality
+- **1280x720 (720p)**: HD quality, lower bandwidth
+- **640x480 (480p)**: Lower quality, minimal bandwidth
+- **Custom**: User-defined width and height
 
-- 1920x1080
-- 1280x720
-- 640x480
-- Custom (specify width and height)
+#### STURDECAM Resolutions
+- **1920x1536 (Native)**: Best quality, higher bandwidth
+- **1920x1080 (1080p)**: Standard HD, good balance
+- **1280x720 (720p)**: Lower bandwidth, faster streaming
+- **Custom**: Tailored to specific requirements
 
-### Stream Naming
+### Streaming Modes
 
-For each selected video file and camera, you can assign a custom stream name, which determines the RTSP endpoint (e.g., `rtsp://<IP>:8554/<stream_name>`).
+#### 1. Single Server Mode (Default)
+- **Description**: One RTSP server accessible on both external IP and localhost
+- **Port**: 8554
+- **Access URLs**: 
+  - `rtsp://EXTERNAL_IP:8554/stream_name`
+  - `rtsp://localhost:8554/stream_name`
+- **Use Case**: When you want the same server accessible both locally and remotely
+
+#### 2. Separate Servers Mode
+- **Description**: Two separate RTSP servers - one for external access, one for localhost
+- **Ports**: 
+  - External: 8554
+  - Localhost: 8555
+- **Access URLs**:
+  - External: `rtsp://EXTERNAL_IP:8554/stream_name`
+  - Localhost: `rtsp://localhost:8555/stream_name`
+- **Use Case**: When you want to isolate local and remote access
+
+#### 3. External Only Mode
+- **Description**: RTSP server accessible only via external IP
+- **Port**: 8554
+- **Access URL**: `rtsp://EXTERNAL_IP:8554/stream_name`
+- **Use Case**: When you only need remote access
+
+## Advanced Features
+
+### Hardware Acceleration
+
+The system automatically detects and uses hardware acceleration when available:
+
+- **NVIDIA Jetson**: Uses `nvvidconv` and `nvv4l2h264enc` for hardware encoding
+- **STURDECAM Devices**: Optimized pipelines for STURDECAM hardware
+- **USB Cameras**: Software encoding with `x264enc`
+
+### Device Detection
+
+The script automatically detects and classifies video devices:
+
+- **STURDECAM**: NVIDIA Jetson-specific cameras with hardware acceleration
+- **USB Cameras**: Standard USB video devices with software encoding
 
 ### Tailscale Integration
 
-If you opt to use Tailscale, the script will:
+Optional secure remote access:
 
-1. Install Tailscale if not already present.
-2. Configure it to obtain a Tailscale IP for secure remote access.
-
-## Streaming Protocol
-
-The script is configured to use the **RTSP (Real Time Streaming Protocol)**. Streams are accessible via URLs in the format:
-
-```
-rtsp://<RTSP_IP>:8554/<stream_name>
-```
-
-- **RTSP_IP**: Default is `localhost` or your Tailscale IP if configured.
-- **Port**: 8554 (default for RTSP servers).
-- **Stream Name**: Defined during the configuration step.
+1. Install Tailscale if not present
+2. Configure for secure remote access
+3. Streams accessible via Tailscale IP
 
 ## Troubleshooting
 
-- **No Video Devices Found**: Ensure cameras are connected and recognized by the system. Use `v4l2-ctl --list-devices` to verify.
-- **Dependency Installation Issues**: Check your internet connection and package manager settings. Ensure you have sudo privileges.
-- **`multi-stream-server` Compilation Errors**: Verify that `libgstrtspserver-1.0-dev` and other development packages are installed.
-- **RTSP Server Not Accessible**: Ensure firewall settings allow traffic on port 8554. Verify the RTSP IP address.
+### Common Issues
+
+#### No Video Devices Found
+- Ensure cameras are connected and recognized
+- Use `v4l2-ctl --list-devices` to verify
+- Check user permissions (add to `video` group)
+
+#### Dependency Installation Issues
+- Check internet connection and package manager settings
+- Ensure sudo privileges are available
+- Verify package repository configuration
+
+#### Compilation Errors
+- Install development packages: `libgstrtspserver-1.0-dev`
+- Check GStreamer installation
+- Verify build tools are available
+
+#### RTSP Server Not Accessible
+- Check firewall settings for port 8554/8555
+- Verify RTSP IP address configuration
+- Test with: `ffplay rtsp://localhost:8554/stream_name`
+
+#### Port Already in Use
+- Check for existing RTSP servers: `netstat -tulpn | grep 8554`
+- Kill existing processes or choose different ports
+- Use `--port` option for custom ports
+
+### Performance Optimization
+
+#### Bandwidth Considerations
+
+| Resolution | Approximate Bitrate | Use Case |
+|------------|-------------------|----------|
+| 1920x1536 (Native) | ~15-20 Mbps | High-quality applications |
+| 1920x1080 (1080p) | ~8-12 Mbps | Standard HD streaming |
+| 1280x720 (720p) | ~4-6 Mbps | Bandwidth-constrained networks |
+| Custom | Variable | Specific requirements |
+
+#### Hardware Acceleration
+- Use STURDECAM devices for best performance on Jetson
+- Lower resolutions for network-constrained environments
+- Monitor system resources during streaming
+
+## Project Structure
+
+```
+rtsp-stream/
+├── rtsp-stream.sh              # Main streaming script
+├── common.sh                   # Shared functions library
+├── Makefile                    # Build system
+├── .gitignore                  # Git ignore patterns
+├── .editorconfig               # Code formatting rules
+├── jetson/                     # Jetson-specific code
+│   ├── multi-stream-server-unified.c  # Unified RTSP server
+│   └── multi-stream-server-unified    # Compiled binary
+└── arm-linux/                  # ARM Linux scripts (legacy)
+    └── rtsp_universal.sh       # Legacy universal script
+```
+
+## Development
+
+### Building from Source
+
+```bash
+# Build all targets
+make all
+
+# Check dependencies
+make check-deps
+
+# Clean build artifacts
+make clean
+
+# Install to system
+make install
+
+# Show help
+make help
+```
+
+### Code Style
+
+The project uses `.editorconfig` for consistent formatting:
+- C files: 4 spaces, LF line endings
+- Shell scripts: 2 spaces, LF line endings
+- Markdown: No trailing whitespace
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
 
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## Support
+
+For issues and questions:
+1. Check the troubleshooting section
+2. Search existing issues
+3. Create a new issue with detailed information
+
 ---
+
+**Note**: This project has been cleaned up and consolidated from multiple redundant scripts into a unified, maintainable solution. The old separate scripts are preserved in the `jetson/` and `arm-linux/` directories for reference but are no longer actively maintained.
